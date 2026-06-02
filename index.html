@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 W杯 予想サイト - Version 5.0</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/2026_FIFA_World_Cup_Logo.svg/1200px-2026_FIFA_World_Cup_Logo.svg.png" class="header-logo" alt="FIFA World Cup 2026">
+        <div class="header-title">
+            <p class="header-main">World Cup 2026</p>
+            <p class="header-sub">完全公式ルール再現版</p>
+        </div>
+    </header>
+
+    <div class="tabs" id="tabs">
+        <button class="tab-btn active" onclick="switchTab('groupTab')">1. グループ</button>
+        <button class="tab-btn" onclick="switchTab('thirdTab')" id="navThird" disabled>2. 3位選抜</button>
+        <button class="tab-btn" onclick="switchTab('knockoutTab')" id="navKnockout" disabled>3. トーナメント</button>
+    </div>
+
+    <div id="groupTab" class="content-area section-content">
+        <p class="desc">各グループの1位〜4位を予想してください。</p>
+        <div id="groupContainer"></div>
+        <button onclick="checkGroupCompletion()" class="btn btn-blue">3位選抜へ進む</button>
+    </div>
+
+    <div id="thirdTab" class="content-area section-content section-hidden">
+        <p class="desc">グループで3位と予想したチームから、進出する8チームを選んでください。</p>
+        <div class="third-count">選択中: <span id="thirdCount">0</span> / 8 チーム</div>
+        <div id="thirdContainer" class="third-grid"></div>
+        <button onclick="generateTournament()" class="btn btn-blue" id="btnGenerateTournament" disabled>トーナメントを作成</button>
+    </div>
+
+    <div id="knockoutTab" class="section-content section-hidden">
+        <div class="content-area" style="padding-bottom: 0; display: flex; flex-direction: column; gap: 10px;">
+            <p class="desc" style="text-align:center; font-weight:bold; margin: 0;">勝つと思うチームをタップしてください（再タップで選択解除）</p>
+            <button onclick="copyShareURL()" class="btn btn-share">📋 予想を保存＆共有URLをコピー</button>
+        </div>
+
+        <div class="tournament-wrapper" id="tournamentWrapper">
+            <div class="scroll-hint">👈 横にスクロールできます 👉</div>
+            <div class="bracket-board" id="bracketBoard"></div>
+            
+            <div class="content-area">
+                <div id="championBanner" class="champion-area">
+                    <p>🏆 WORLD CHAMPION 🏆</p>
+                    <h2><img id="championFlag" class="flag-icon" style="width:36px; height:26px;"> <span id="championName"></span></h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-area">
+            <button onclick="saveTournamentAsImage()" class="btn btn-gold" id="btnSaveImage" disabled>
+                📸 予想画像を生成して保存 (全試合の選択が必要です)
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="imageModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 style="margin:0;">予想結果</h3>
+            <span class="close" onclick="closeModal()">&times;</span>
+        </div>
+        <p class="save-desc">画像を長押しして「写真に追加」で保存してください。</p>
+        <img id="modalImage" alt="Tournament Bracket">
+    </div>
+</div>
+
+<script src="matrix.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
