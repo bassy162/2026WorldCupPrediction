@@ -2,11 +2,56 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helve
 .container { max-width: 100vw; margin: 0 auto; background-color: #fff; min-height: 100vh; box-shadow: 0 0 10px rgba(0,0,0,0.1); padding-bottom: 60px; overflow-x: hidden; }
 
 /* ヘッダーデザイン */
-header { background-color: #0f172a; color: white; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: center; gap: 15px; }
-.header-logo { width: auto; height: 40px; object-fit: contain; }
-.header-title { display: flex; flex-direction: column; align-items: flex-start; text-align: left; }
-.header-main { margin: 0; font-size: 1.2rem; font-weight: 900; line-height: 1.1; letter-spacing: -0.5px; }
-.header-sub { margin: 0; font-size: 13px; font-weight: bold; color: #facc15; }
+/* ② 新ヘッダーデザインの調整（ロゴ画像と文字の配置） */
+header { 
+    background-color: #0f172a; /* image_5.png の濃い青 */
+    color: white; 
+    padding: 15px; 
+    text-align: center; 
+    position: sticky; 
+    top: 0; 
+    z-index: 100; 
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+    
+    /* ロゴと文字を横に並べるための設定 */
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 15px; /* ロゴと文字の間隔 */
+}
+
+/* ロゴ画像のスタイル */
+.header-logo {
+    width: auto;
+    height: 40px; /* ロゴの高さを固定 */
+    object-fit: contain; /* 画像を崩さずに収める */
+}
+
+/* 文字部分を縦に並べるための設定 */
+.header-title { 
+    display: flex; 
+    flex-direction: column; 
+    align-items: flex-start; /* 文字を左寄せ */
+    text-align: left; 
+}
+
+/* メインの文字 */
+.header-main { 
+    margin: 0; 
+    font-size: 1.2rem; 
+    font-weight: 900; 
+    line-height: 1.1; 
+    letter-spacing: -0.5px; 
+}
+
+/* サブの文字（2026など） */
+.header-sub { 
+    margin: 0; 
+    font-size: 13px; 
+    font-weight: bold; 
+    color: #facc15; /* image_5.png の黄色 */
+}
+
 
 /* タブナビゲーション */
 .tabs { display: flex; border-bottom: 1px solid #ddd; background: white; position: sticky; top: 70px; z-index: 99; max-width: 600px; margin: 0 auto; }
