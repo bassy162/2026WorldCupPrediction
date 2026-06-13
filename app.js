@@ -153,7 +153,6 @@ function renderTournament() {
     }
 
     const board = document.getElementById('bracketBoard');
-    if (!board) return; // トーナメント画面が存在しない場合はスキップ
     board.innerHTML = '';
     
     let champion = appState.knockout['m104'];
@@ -169,4 +168,174 @@ function renderTournament() {
             let p1State = ''; let p2State = '';
             
             if (appState.knockout[mId] === p1 && p1 !== '未定') { p1State = 'winner'; p2State = 'loser'; }
-            if (appState.knockout[mId] === p2 && p2 !== '未定') { p2State = 'winner
+            if (appState.knockout[mId] === p2 && p2 !== '未定') { p2State = 'winner'; p1State = 'loser'; }
+
+            colHtml += `<div class="match-box">` +
+                       `<div class="team-line ${p1State}" onclick="selectWinner('${mId}','${p1}')">${getFlagImg(p1)}<span class="team-name">${p1}</span></div>` +
+                       `<div class="team-line ${p2State}" onclick="selectWinner('${mId}','${p2}')">${getFlagImg(p2)}<span class="team-name">${p2}</span></div>` +
+                       `</div>`;
+        });
+        colHtml += '</div>';
+        board.innerHTML += colHtml;
+    });
+
+    // 優勝バナーの制御
+    const banner = document.getElementById('championBanner');
+    if (champion && champion !== '未定') {
+        document.getElementById('championName').innerText = champion;
+        document.getElementById('championFlag').src = `https://flagcdn.com/w80/${flagCodeMap[champion]}.png`;
+        banner.style.display = 'block';
+    } else {
+        banner.style.display = 'none';
+    }
+
+    // ② すべての試合(31試合)が予測された場合のみ、画像保存ボタンを活性化
+    validateSaveButton();
+}
+
+// ② 選択解除機能および依存関係自動削除ロジック
+function selectWinner(matchId, winnerName) {
+    if (!winnerName || winnerName === '未定') return;
+    
+    if (appState.knockout[matchId] === winnerName) {
+        // すでに同じチームが選ばれている場合は「解除」
+        delete appState.knockout[matchId];
+        cascadeClear(matchId);
+    } else {
+        // 新しく選ばれた場合
+        appState.knockout[matchId] = winnerName;
+        cascadeClear(matchId);
+    }
+    saveToURL();
+    renderTournament();
+}
+
+// 下流の試合結果を再帰的にクリアする補助関数
+function cascadeClear(matchId) {
+    let currentId = matchId;
+    while (currentId && matchStructure[currentId]) {
+        let nxt = matchStructure[currentId].next;
+        if (nxt) {
+            delete appState.knockout[nxt];
+            currentId = nxt;
+        } else {
+            break;
+        }
+    }
+}
+
+function validateSaveButton() {
+    const btnSave = document.getElementById('btnSaveImage');
+    if (!btnSave) return;
+    
+    // 全31試合が埋まっているかチェック
+    let filledCount = 0;
+    for(let k in liveMatches) {
+        if(appState.knockout[k] && appState.knockout[k] !== '未定') filledCount++;
+    }
+    
+    if(filledCount === 31) {
+        btnSave.disabled = false;
+        btnSave.innerText = "📸 予想画像を生成して保存";
+    } else {
+        btnSave.disabled = true;
+        btnSave.innerText = `📸 予想画像を生成して保存 (${filledCount}/31 試合選択済)`;
+    }
+}
+
+// --- 4. 保存・共有・インフラ管理 ---
+// ③ パラメータ付きURLの作成・クリップボードへの自動保存機能
+function copyShareURL() {
+    try {
+        let jsonStr = JSON.stringify(appState);
+        let base64 = btoa(unescape(encodeURIComponent(jsonStr)));
+        let shareURL = window.location.origin + window.location.pathname + "?data=" + base64;
+        
+        navigator.clipboard.writeText(shareURL).then(() => {
+            alert("📋 予想データを保存したURLをクリップボードにコピーしました！SNSでのシェアやブックマークとして保存できます。");
+        }).catch(() => {
+            alert("コピーに失敗しました。URLのパラメータをご利用ください: " + shareURL);
+        });
+    } catch (e) {
+        alert("データの文字列化に失敗しました。");
+    }
+}
+
+function saveToURL() {
+    try {
+        if (window.location.protocol === 'file:') return; 
+        let jsonStr = JSON.stringify(appState);
+        let base64 = btoa(unescape(encodeURIComponent(jsonStr)));
+        let newUrl = window.location.origin + window.location.pathname + "?data=" + base64;
+        if (window.history && window.history.replaceState) window.history.replaceState({path: newUrl}, '', newUrl);
+    } catch (e) {}
+}
+
+function loadFromURL() {
+    try {
+        if (window.location.protocol === 'file:') return; 
+        let urlParams = new URLSearchParams(window.location.search);
+        let dataParam = urlParams.get('data');
+        if (dataParam) {
+            appState = JSON.parse(decodeURIComponent(escape(atob(dataParam))));
+            document.getElementById('navThird').disabled = false;
+            renderThirdSelection();
+            if (appState.thirdSelected.length === 8) {
+                document.getElementById('navKnockout').disabled = false;
+                renderTournament();
+                switchTab('knockoutTab');
+            }
+        }
+    } catch (e) {}
+}
+
+function switchTab(tabId) {
+    document.querySelectorAll('.section-content').forEach(c => c.classList.add('section-hidden'));
+    document.getElementById(tabId).classList.remove('section-hidden');
+    document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+    
+    let activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick').includes(tabId));
+    if(activeBtn) activeBtn.classList.add('active');
+    
+    window.scrollTo(0, 0);
+
+    if(tabId === 'knockoutTab') {
+        setTimeout(() => {
+            const wrapper = document.getElementById('tournamentWrapper');
+            const board = document.getElementById('bracketBoard');
+            if(wrapper && board) wrapper.scrollLeft = (board.scrollWidth - wrapper.clientWidth) / 2;
+        }, 100);
+    }
+}
+
+function saveTournamentAsImage() {
+    const element = document.getElementById('tournamentWrapper');
+    let originalOverflow = element.style.overflowX;
+    element.style.overflowX = 'visible';
+
+    html2canvas(element, {
+        backgroundColor: '#0f172a',
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        width: element.scrollWidth,
+        height: element.scrollHeight
+    }).then(canvas => {
+        element.style.overflowX = originalOverflow;
+        let dataUrl = canvas.toDataURL("image/png");
+        document.getElementById('modalImage').src = dataUrl;
+        document.getElementById('imageModal').style.display = "block";
+    }).catch(err => {
+        element.style.overflowX = originalOverflow;
+        alert("画像の作成に失敗しました。スクリーンショット機能をご利用ください。");
+    });
+}
+
+function closeModal() {
+    document.getElementById('imageModal').style.display = "none";
+}
+
+// 初期起動コード
+window.addEventListener('DOMContentLoaded', () => {
+    renderGroupStage();
+    loadFromURL();
