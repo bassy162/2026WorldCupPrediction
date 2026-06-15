@@ -339,3 +339,4 @@ function closeModal() {
 window.addEventListener('DOMContentLoaded', () => {
     renderGroupStage();
     loadFromURL();
+});
